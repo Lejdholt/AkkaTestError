@@ -63,7 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DomainEvent.cs" />
-    <Compile Include="FileImportManager.cs" />
+    <Compile Include="Manager.cs" />
     <Compile Include="IProcessFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StartProcessCommand.cs" />

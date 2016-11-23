@@ -82,6 +82,21 @@ namespace AkkaTestError.Xunit
             process.ExpectMsg<DomainEvent>();
         }
 
+
+        [Fact]
+        public void GivenProcessExists_WhenPublishDomainEvent_ShouldDelegateEventToProcess()
+        {
+            var evnt = Substitute.For<DomainEvent>(processId);
+
+            process.IgnoreAllMessagesBut<DomainEvent>();
+
+            manager.Tell(new StartProcessCommand(processId));
+
+            Sys.EventStream.Publish(evnt);
+
+            process.ExpectMsg<DomainEvent>();
+        }
+
         [Fact]
         public void GivenProcessDoesNotExist_WhenDomainEvent_ShouldLogError()
         {
