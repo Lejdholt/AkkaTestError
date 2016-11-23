@@ -128,4 +128,60 @@ namespace AkkaTestError.NUnit
 
 
     }
+
+
+
+    [TestFixture]
+    public class ManagerTests_StartRemove : TestKit
+    {
+        private TestProbe process;
+        private IActorRef manager;
+        private Guid processId;
+
+        [SetUp]
+        public void Setup()
+        {
+            IProcessFactory factory = Substitute.For<IProcessFactory>();
+            process = CreateTestProbe();
+            processId = Guid.NewGuid();
+            factory.Create(Arg.Any<IActorRefFactory>(), Arg.Any<SupervisorStrategy>()).Returns(process);
+            manager = Sys.ActorOf(Props.Create(() => new Manager(factory)));
+        }
+
+        [Test]
+        public void GivenAnyTime_WhenProcessTerminates_ShouldLogStartRemovingProcess()
+        {
+            manager.Tell(new StartProcessCommand(processId));
+
+            EventFilter.Info("Removing process.")
+                .ExpectOne(() => Sys.Stop(process));
+        }
+    }
+
+    [TestFixture]
+    public class ManagerTests_Removing : TestKit
+    {
+        private TestProbe process;
+        private IActorRef manager;
+        private Guid processId;
+
+        [SetUp]
+        public void Setup()
+        {
+            IProcessFactory factory = Substitute.For<IProcessFactory>();
+            process = CreateTestProbe();
+            processId = Guid.NewGuid();
+            factory.Create(Arg.Any<IActorRefFactory>(), Arg.Any<SupervisorStrategy>()).Returns(process);
+            manager = Sys.ActorOf(Props.Create(() => new Manager(factory)));
+        }
+
+        [Test]
+        public void GivenProcessExist_WhenProcessTerminates_ShouldLogRemovingProcess()
+        {
+            manager.Tell(new StartProcessCommand(processId));
+
+            EventFilter.Info($"Removing process with Id: {processId}.")
+                .ExpectOne(() => Sys.Stop(process));
+        }
+    }
 }

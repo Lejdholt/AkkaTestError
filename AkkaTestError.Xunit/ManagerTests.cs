@@ -12,18 +12,13 @@ namespace AkkaTestError.Xunit
         private readonly TestProbe process;
         private readonly IActorRef manager;
         private readonly Guid processId;
-      
 
         public ManagerTests() 
         {
             IProcessFactory factory = Substitute.For<IProcessFactory>();
-
             process = CreateTestProbe();
-
             processId = Guid.NewGuid();
-
             factory.Create(Arg.Any<IActorRefFactory>(), Arg.Any<SupervisorStrategy>()).Returns(process);
-
             manager = Sys.ActorOf(Props.Create(() => new Manager(factory)));
         }
 
@@ -125,7 +120,56 @@ namespace AkkaTestError.Xunit
             EventFilter.Info($"Removing process with Id: {processId}.")
                 .ExpectOne(() => Sys.Stop(process));
         }
+    }
 
 
+    public class ManagerTests_StartRemove : TestKit
+    {
+        private readonly TestProbe process;
+        private readonly IActorRef manager;
+        private readonly Guid processId;
+
+        public ManagerTests_StartRemove()
+        {
+            IProcessFactory factory = Substitute.For<IProcessFactory>();
+            process = CreateTestProbe();
+            processId = Guid.NewGuid();
+            factory.Create(Arg.Any<IActorRefFactory>(), Arg.Any<SupervisorStrategy>()).Returns(process);
+            manager = Sys.ActorOf(Props.Create(() => new Manager(factory)));
+        }
+
+        [Fact]
+        public void GivenAnyTime_WhenProcessTerminates_ShouldLogStartRemovingProcess()
+        {
+            manager.Tell(new StartProcessCommand(processId));
+
+            EventFilter.Info("Removing process.")
+                .ExpectOne(() => Sys.Stop(process));
+        }
+    }
+
+    public class ManagerTests_Removing : TestKit
+    {
+        private readonly TestProbe process;
+        private readonly IActorRef manager;
+        private readonly Guid processId;
+
+        public ManagerTests_Removing()
+        {
+            IProcessFactory factory = Substitute.For<IProcessFactory>();
+            process = CreateTestProbe();
+            processId = Guid.NewGuid();
+            factory.Create(Arg.Any<IActorRefFactory>(), Arg.Any<SupervisorStrategy>()).Returns(process);
+            manager = Sys.ActorOf(Props.Create(() => new Manager(factory)));
+        }
+
+        [Fact]
+        public void GivenProcessExist_WhenProcessTerminates_ShouldLogRemovingProcess()
+        {
+            manager.Tell(new StartProcessCommand(processId));
+
+            EventFilter.Info($"Removing process with Id: {processId}.")
+                .ExpectOne(() => Sys.Stop(process));
+        }
     }
 }
